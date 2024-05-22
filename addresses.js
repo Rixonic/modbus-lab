@@ -101,14 +101,14 @@ module.exports = [
         nombre: 'Master MIX', 
         sensorId: 'A_5_46', 
         labId: '',
-        tempAddr: 28, 
+        tempAddr: 30, 
         highAddr: 160, 
         lowAddr: 162 
     },{
         nombre: 'Amplificador', 
         sensorId: 'A_5_11', 
         labId: '',
-        tempAddr: 28, 
+        tempAddr: 32, 
         highAddr: 164, 
         lowAddr: 166 
     }
