@@ -4,22 +4,23 @@ const WebSocket = require('ws');
 const fs = require('fs');
 const path = require('path');
 const net = require('net');
-
+const cors = require('cors');
 const sensors = require('./addresses');
+const axios = require('axios');
 
-// Configuración de Express
 const app = express();
 const port = 3001;
 
 const results = [];
 
-// Configuración de Modbus TCP
 const socket = new net.Socket();
-const client = new jsmodbus.client.TCP(socket, 1); // unitId=1
+const client = new jsmodbus.client.TCP(socket, 1); 
 const options = {
-  'host': '192.168.90.235', // Cambia esto a la IP de tu PLC
+  'host': '192.168.90.235', 
   'port': 502
 };
+
+app.use(cors());
 
 function connectModbus() {
   return new Promise((resolve, reject) => {
@@ -27,7 +28,7 @@ function connectModbus() {
     socket.on('error', reject);
   });
 }
-// Cargar el archivo de configuración
+
 const configPath = path.join(__dirname, 'config', 'time.json');
 let config;
 
@@ -59,6 +60,15 @@ function floatToRegisters(value) {
   return [buffer.readUInt16BE(0), buffer.readUInt16BE(2)];
 }
 
+function sendResults() {
+  axios.post('http://10.0.0.124:4000/temperatura', results)
+    .then(response => {
+      console.log('Datos enviados correctamente');
+    })
+    .catch(error => {
+      console.error('Error al enviar los datos:', error);
+    });
+}
 // Función para leer los datos del PLC y armar el JSON
 async function initialReadingSensors() {
   for (let sensor of sensors) {
@@ -181,7 +191,7 @@ async function startServer() {
   await initialReadingSensors(); // Espera a que se complete la lectura inicial
 
   const wss = new WebSocket.Server({ port: 8080 });
-  
+  setInterval(sendResults, 60000);
   setInterval(async () => {
     await readSensors();
     //console.log(results)
